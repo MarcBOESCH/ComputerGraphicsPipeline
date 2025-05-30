@@ -129,6 +129,10 @@ public class PipelineData {
     // the rendering mode
     private RenderingMode renderingMode;
 
+    public void setModelRotAxis(Vec3 modelRotAxis) {
+        this.modelRotAxis = modelRotAxis;
+    }
+
     private PipelineData(Builder builder) {
 
       this.graphicsContext = builder.c.getGraphicsContext2D();

@@ -10,6 +10,7 @@ import at.fhv.sysarch.lab3.pipeline.PipelineData;
 import at.fhv.sysarch.lab3.pipeline.PullPipelineFactory;
 import at.fhv.sysarch.lab3.pipeline.PushPipelineFactory;
 import at.fhv.sysarch.lab3.rendering.RenderingMode;
+import com.hackoeur.jglm.Vec3;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -72,6 +73,7 @@ public class Main extends Application {
                                     .setRenderingMode(RenderingMode.FILLED)
                                     .setPerformLighting(true)
                                     .build();
+            pd4.setModelRotAxis(new Vec3(1,0,0));
 
             AnimationTimer anim1;
             AnimationTimer anim2;
