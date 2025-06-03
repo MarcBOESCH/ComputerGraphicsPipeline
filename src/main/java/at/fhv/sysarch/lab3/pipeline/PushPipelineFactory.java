@@ -4,6 +4,8 @@ import at.fhv.sysarch.lab3.animation.AnimationRenderer;
 import at.fhv.sysarch.lab3.obj.Face;
 import at.fhv.sysarch.lab3.obj.Model;
 import at.fhv.sysarch.lab3.pipeline.filter.*;
+import at.fhv.sysarch.lab3.pipeline.pipe.Pipe;
+import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
 import com.hackoeur.jglm.*;
 import javafx.animation.AnimationTimer;
 import javafx.scene.paint.Color;
@@ -13,11 +15,19 @@ import javax.xml.transform.Source;
 
 public class PushPipelineFactory {
     public static AnimationTimer createPipeline(PipelineData pd) {
-        // TODO: push from the source (model)
+
+        // push from the source (model)
+        PushFilter<Void, Face> sourceModel = new ModelSource();
+        PushPipe<Face> sourcePipe = new Pipe<>();
+        sourceModel.setSuccessor(sourcePipe);
+
+        // perform model-view transformation from model to VIEW SPACE coordinates
+        PushFilter<Face, Face> rotFilter = new RotationFilter();
+        sourcePipe.setSuccessor(rotFilter);
 
         // TODO: improve connecting filters, add pipes...
 
-        PushFilter sourceModel = new ModelSource();
+
 
         PushFilter rotFilter = new RotationFilter();
         PushFilter scaleFilter = new ScaleFilter();

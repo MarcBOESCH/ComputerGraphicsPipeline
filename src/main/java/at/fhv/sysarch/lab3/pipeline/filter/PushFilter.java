@@ -1,6 +1,7 @@
 package at.fhv.sysarch.lab3.pipeline.filter;
 
 import at.fhv.sysarch.lab3.obj.Face;
+import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
 
 /**
  * Generisches Interface für alle Push-Filter in der Pipeline.
@@ -14,11 +15,11 @@ public interface PushFilter<I, O> {
  * Verknüpft diesen Filter mit seinem Nachfolger.
  * Der Nachfolger verarbeitet den Output-Typ O dieses Filters weiter.
  * */
-    public void setSuccessor(PushFilter<O, ?> successor);
+    void setSuccessor(PushPipe<O> successor);
 
     /**
      * Verarbeitet ein einzelnes Objekt vom Typ I (Input). Das Ergebnis
      * wird (sofern nicht null) an successor.push(...) weitergereicht
      */
-    public void push(I input);
+    void push(I input);
 }
