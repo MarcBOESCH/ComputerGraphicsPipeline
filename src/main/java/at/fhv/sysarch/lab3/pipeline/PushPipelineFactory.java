@@ -30,6 +30,15 @@ public class PushPipelineFactory {
         backfaceCullingPipe.setSuccessor(backfaceCullingFilter);
 
         //perform depth sorting in VIEW SPACE
+        PushPipe<Face> depthSortingPipe = new Pipe<>();
+        backfaceCullingFilter.setSuccessor(depthSortingPipe);
+        PushFilter<Face, Face> depthSortingFilter = new DepthSortingFilter();
+        depthSortingPipe.setSuccessor(depthSortingFilter);
+
+        PushPipe<Face> renderingPipe = new Pipe<>();
+        depthSortingFilter.setSuccessor(renderingPipe);
+        PushFilter<Face, Face> renderer = new Renderer(pd.getGraphicsContext(), pd.getModelColor());
+        renderingPipe.setSuccessor(renderer);
 
         // TODO 4. add coloring (space unimportant)
 
@@ -75,6 +84,7 @@ public class PushPipelineFactory {
 
                 // Rendering triggern
                 ((ModelSource)sourceModel).run(model);
+                ((DepthSortingFilter)depthSortingFilter).sortAndPush();
             }
         };
     }
