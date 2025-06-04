@@ -1,10 +1,11 @@
 package at.fhv.sysarch.lab3.pipeline.filter;
 
 import at.fhv.sysarch.lab3.obj.Face;
+import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class Renderer implements PushFilter {
+public class Renderer implements PushFilter<Face, Face> {
 
     private final Color color;
     private final GraphicsContext gc;
@@ -15,7 +16,7 @@ public class Renderer implements PushFilter {
     }
 
     @Override
-    public void setSuccessor(PushFilter successor) {
+    public void setSuccessor(PushPipe<Face> successor) {
         // IGNORE
     }
 

@@ -1,18 +1,19 @@
 package at.fhv.sysarch.lab3.pipeline.filter;
 
 import at.fhv.sysarch.lab3.obj.Face;
+import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
 import com.hackoeur.jglm.Mat4;
 import com.hackoeur.jglm.Matrices;
 import com.hackoeur.jglm.Vec3;
 import com.hackoeur.jglm.Vec4;
 
-public class ScaleFilter implements PushFilter {
+public class ScaleFilter implements PushFilter<Face, Face> {
 
 
-    private PushFilter successor;
+    private PushPipe<Face> successor;
 
     @Override
-    public void setSuccessor(PushFilter successor) {
+    public void setSuccessor(PushPipe<Face> successor) {
         this.successor = successor;
     }
 
