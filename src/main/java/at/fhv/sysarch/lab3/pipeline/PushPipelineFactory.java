@@ -3,6 +3,7 @@ package at.fhv.sysarch.lab3.pipeline;
 import at.fhv.sysarch.lab3.animation.AnimationRenderer;
 import at.fhv.sysarch.lab3.obj.Face;
 import at.fhv.sysarch.lab3.obj.Model;
+import at.fhv.sysarch.lab3.pipeline.data.Pair;
 import at.fhv.sysarch.lab3.pipeline.filter.*;
 import at.fhv.sysarch.lab3.pipeline.pipe.Pipe;
 import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
@@ -29,18 +30,18 @@ public class PushPipelineFactory {
         PushFilter<Face, Face> backfaceCullingFilter = new BackfaceCullingFilter();
         backfaceCullingPipe.setSuccessor(backfaceCullingFilter);
 
-        //perform depth sorting in VIEW SPACE
+        // perform depth sorting in VIEW SPACE
         PushPipe<Face> depthSortingPipe = new Pipe<>();
         backfaceCullingFilter.setSuccessor(depthSortingPipe);
         PushFilter<Face, Face> depthSortingFilter = new DepthSortingFilter();
         depthSortingPipe.setSuccessor(depthSortingFilter);
 
-        PushPipe<Face> renderingPipe = new Pipe<>();
-        depthSortingFilter.setSuccessor(renderingPipe);
-        PushFilter<Face, Face> renderer = new Renderer(pd.getGraphicsContext(), pd.getModelColor());
-        renderingPipe.setSuccessor(renderer);
+        // add coloring (space unimportant)
+        PushPipe<Face> colorPipe = new Pipe<>();
+        depthSortingFilter.setSuccessor(colorPipe);
+        PushFilter<Face, Pair<Face, Color>> colorFilter = new ColorFilter(pd.getModelColor());
+        colorPipe.setSuccessor(colorFilter);
 
-        // TODO 4. add coloring (space unimportant)
 
         // lighting can be switched on/off
         if (pd.isPerformLighting()) {
@@ -54,9 +55,13 @@ public class PushPipelineFactory {
         // TODO 6. perform perspective division to screen coordinates
 
         // TODO 7. feed into the sink (renderer)
+        PushPipe<Face> renderingPipe = new Pipe<>();
+        depthSortingFilter.setSuccessor(renderingPipe);
+        PushFilter<Face, Face> renderer = new Renderer(pd.getGraphicsContext(), pd.getModelColor());
+        renderingPipe.setSuccessor(renderer);
 
         // returning an animation renderer which handles clearing of the
-        // viewport and computation of the praction
+        // viewport and computation of the fraction
         return new AnimationRenderer(pd) {
 
             private float rotation = 0f;
