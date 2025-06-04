@@ -24,12 +24,9 @@ public class BackfaceCullingFilter implements PushFilter<Face, Face>{
     @Override
     public void push(Face face) {
         // Drei Eckkoordinaten aus Face holen (View-Space)
-        Vec4 v1 = face.getV1();
-        Vec4 v2 = face.getV2();
-        Vec4 v3 = face.getV3();
-        Vec3 p1 = new Vec3(v1.getX(), v1.getY(), v1.getZ());
-        Vec3 p2 = new Vec3(v2.getX(), v2.getY(), v2.getZ());
-        Vec3 p3 = new Vec3(v3.getX(), v3.getY(), v3.getZ());
+        Vec3 p1 = face.getV1().toVec3();
+        Vec3 p2 = face.getV2().toVec3();
+        Vec3 p3 = face.getV3().toVec3();
 
         // Kanten berechnen
         Vec3 edge1 = p2.subtract(p1);

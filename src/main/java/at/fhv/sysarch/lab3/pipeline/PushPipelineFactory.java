@@ -42,22 +42,36 @@ public class PushPipelineFactory {
         PushFilter<Face, Pair<Face, Color>> colorFilter = new ColorFilter(pd.getModelColor());
         colorPipe.setSuccessor(colorFilter);
 
+        PushPipe<Pair<Face, Color>> projectionPipe = new Pipe<>();
+        PushFilter<Pair<Face, Color>, Pair<Face, Color>> projectionFilter = new ProjectionFilter(pd.getProjTransform());
 
         // lighting can be switched on/off
         if (pd.isPerformLighting()) {
-            // 4a. TODO perform lighting in VIEW SPACE
-            
-            // 5. TODO perform projection transformation on VIEW SPACE coordinates
+            PushPipe<Pair<Face, Color>> lightPipe = new Pipe<>();
+            colorFilter.setSuccessor(lightPipe);
+            PushFilter<Pair<Face, Color>, Pair<Face, Color>> lightFilter = new LightningFilter(pd.getLightPos());
+            lightPipe.setSuccessor(lightFilter);
+
+            // perform projection transformation on VIEW SPACE coordinates
+            lightFilter.setSuccessor(projectionPipe);
+
+            projectionPipe.setSuccessor(projectionFilter);
+
         } else {
-            // 5. TODO perform projection transformation
+            colorFilter.setSuccessor(projectionPipe);
+            projectionPipe.setSuccessor(projectionFilter);
         }
 
-        // TODO 6. perform perspective division to screen coordinates
+        // perform perspective division to screen coordinates
+        PushPipe<Pair<Face, Color>> transformationPipe = new Pipe<>();
+        projectionFilter.setSuccessor(transformationPipe);
+        PushFilter<Pair<Face, Color>, Pair<Face, Color>> transformationFilter = new ScreenTransformationFilter(pd.getViewportTransform());
+        transformationPipe.setSuccessor(transformationFilter);
 
-        // TODO 7. feed into the sink (renderer)
-        PushPipe<Face> renderingPipe = new Pipe<>();
-        depthSortingFilter.setSuccessor(renderingPipe);
-        PushFilter<Face, Face> renderer = new Renderer(pd.getGraphicsContext(), pd.getModelColor());
+        // feed into the sink (renderer)
+        PushPipe<Pair<Face, Color>> renderingPipe = new Pipe<>();
+        transformationFilter.setSuccessor(renderingPipe);
+        PushFilter<Pair<Face, Color>, Void> renderer = new Renderer(pd.getGraphicsContext(), pd.getRenderingMode());
         renderingPipe.setSuccessor(renderer);
 
         // returning an animation renderer which handles clearing of the
@@ -78,7 +92,7 @@ public class PushPipelineFactory {
                 rotation += fraction * angluarSpeed;
 
                 // Rotationsmatrix erzeugen
-                Mat4 rotationMatrix = Matrices.rotate(rotation, pd.getModelRotAxis()); // Rotationsmatrix um Y-Achse
+                Mat4 rotationMatrix = Matrices.rotate(rotation, new Vec3(0f, 1f, 0f)); // Rotationsmatrix um Y-Achse
                 Mat4 modelTranslationMatrix = pd.getModelTranslation().multiply(rotationMatrix); // Model-Matrix
 
                 // ModelView-Transformation
