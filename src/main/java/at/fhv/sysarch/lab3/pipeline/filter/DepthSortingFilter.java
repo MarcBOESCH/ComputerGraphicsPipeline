@@ -9,8 +9,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Sortiert alle gesammelten Faces nach ihrem durchschnittlichen Z-Wert in absteigender Reihenfolge
- * (höchstes Z zuerst, d. h. am weitesten weg von der Kamera) und ruft dann
+ * Sortiert alle gesammelten Faces nach ihrem durchschnittlichen Z-Wert in aufsteigender Reihenfolge
+ * (weit entfernte Faces zuerst) und ruft dann
  * successor.push(face) auf jedem sortierten Face auf.
  */
 public class DepthSortingFilter implements PushFilter<Face, Face> {
@@ -34,13 +34,13 @@ public class DepthSortingFilter implements PushFilter<Face, Face> {
     }
 
     /**
-     * Sortiert alle gesammelten Faces nach ihrem durchschnittlichen Z-Wert in absteigender Reihenfolge
-     * (höchstes Z zuerst, d. h. am weitesten weg von der Kamera) und ruft dann successor.push(face)
+     * Sortiert alle gesammelten Faces nach ihrem durchschnittlichen Z-Wert in aufsteigender Reihenfolge
+     * (weit entfernte Faces zuerst) und ruft dann successor.push(face)
      * auf jedem sortierten Face auf. Anschließend wird die Queue geleert.
      */
     public void sortAndPush() {
         // Queue anhand des durchschnittlichen Z-Werts sortieren
-        faceQueue.sort(Comparator.comparingDouble(this::averageZ).reversed());
+        faceQueue.sort(Comparator.comparingDouble(this::averageZ));
 
         // Jedes sortierte Face pushen
         for (Face f : faceQueue) {
