@@ -2,14 +2,17 @@ package at.fhv.sysarch.lab3.pipeline.filter;
 
 import at.fhv.sysarch.lab3.obj.Face;
 import at.fhv.sysarch.lab3.pipeline.data.Pair;
+import at.fhv.sysarch.lab3.pipeline.pipe.Pipe;
+import at.fhv.sysarch.lab3.pipeline.pipe.PullPipe;
 import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
 import com.hackoeur.jglm.Vec3;
 import javafx.scene.paint.Color;
 
-public class LightningFilter implements PushFilter<Pair<Face, Color>, Pair<Face, Color>> {
+public class LightningFilter implements PushFilter<Pair<Face, Color>, Pair<Face, Color>>, PullFilter<Pair<Face, Color>, Pair<Face, Color>> {
 
     private PushPipe<Pair<Face, Color>> successor;
     private Vec3 lightPos;
+    private PullPipe<Pair<Face, Color>> predecessor;
 
     public LightningFilter(Vec3 lightPos) {
         this.lightPos = lightPos;
@@ -86,5 +89,27 @@ public class LightningFilter implements PushFilter<Pair<Face, Color>, Pair<Face,
         }
 
 
+    }
+
+
+    @Override
+    public Pair<Face, Color> pull() {
+        Pair<Face, Color> data = this.predecessor.pull();
+        if (data != null){
+            Face dataFace = data.fst();
+            float dotproduct = dataFace.getN1().toVec3().dot(lightPos.getUnitVector());
+            if(dotproduct <= 0){
+                return new Pair<>(dataFace, Color.BLACK);
+            }
+                return new Pair<>(dataFace, data.snd().deriveColor(0, 1, dotproduct, 1)); //deriveColor(double hueShift, double saturationFactor, double brightnessFactor <- this de one, double opacityFactor)
+
+        }
+        //hurensohnrechnung
+        return null;
+    }
+
+    @Override
+    public void setPredecessor(Pipe<Pair<Face, Color>> predecessor) {
+        this.predecessor = predecessor;
     }
 }
