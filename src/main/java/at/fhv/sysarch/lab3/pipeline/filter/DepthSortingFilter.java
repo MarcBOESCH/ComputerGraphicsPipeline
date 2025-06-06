@@ -78,12 +78,13 @@ public class DepthSortingFilter implements PushFilter<Face, Face>, PullFilter<Fa
                         faceQueue.add(data);
                     } else {
                         //last element was reached, sort that list, might be iffy.
-                        faceQueue.sort(Comparator.comparingDouble(this::averageZ));
+
                         break;
                     }
                 } catch (IllegalArgumentException ignored) {
 
                 } catch (ArrayIndexOutOfBoundsException ignored) {
+                    faceQueue.sort(Comparator.comparingDouble(this::averageZ));
                     break;
                 }
             }
