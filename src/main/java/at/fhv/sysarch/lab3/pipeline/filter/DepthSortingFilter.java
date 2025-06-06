@@ -1,7 +1,10 @@
 package at.fhv.sysarch.lab3.pipeline.filter;
 
 import at.fhv.sysarch.lab3.obj.Face;
+import at.fhv.sysarch.lab3.pipeline.pipe.Pipe;
+import at.fhv.sysarch.lab3.pipeline.pipe.PullPipe;
 import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
+import com.hackoeur.jglm.Vec3;
 import com.hackoeur.jglm.Vec4;
 
 import java.util.ArrayList;
@@ -13,10 +16,12 @@ import java.util.List;
  * (höchstes Z zuerst, d. h. am weitesten weg von der Kamera) und ruft dann
  * successor.push(face) auf jedem sortierten Face auf.
  */
-public class DepthSortingFilter implements PushFilter<Face, Face> {
+public class DepthSortingFilter implements PushFilter<Face, Face>, PullFilter<Face, Face> {
 
     private PushPipe<Face> successor;
-
+    private PullPipe<Face> predecessor;
+    private int listIndex = 0;
+    private Vec3 viewPort;
     private List<Face> faceQueue = new ArrayList<>();
 
     @Override
@@ -40,7 +45,7 @@ public class DepthSortingFilter implements PushFilter<Face, Face> {
      */
     public void sortAndPush() {
         // Queue anhand des durchschnittlichen Z-Werts sortieren
-        faceQueue.sort(Comparator.comparingDouble(this::averageZ).reversed());
+        faceQueue.sort(Comparator.comparingDouble(this::averageZ));
 
         // Jedes sortierte Face pushen
         for (Face f : faceQueue) {
@@ -59,5 +64,40 @@ public class DepthSortingFilter implements PushFilter<Face, Face> {
         Vec4 v3 = face.getV3();
 
         return (v1.getZ() + v2.getZ() + v3.getZ()) / 3.0;
+    }
+
+    @Override
+    public Face pull() {
+        if (faceQueue.isEmpty() && listIndex == 0){
+            //Add to the Queue until its full once
+            while (true) {
+                Face data;
+                try {
+                    data = predecessor.pull();
+                    if (data != null) {
+                        faceQueue.add(data);
+                    } else {
+                        //last element was reached, sort that list, might be iffy.
+                        faceQueue.sort(Comparator.comparingDouble(this::averageZ));
+                        break;
+                    }
+                } catch (IllegalArgumentException ignored) {
+
+                } catch (ArrayIndexOutOfBoundsException ignored) {
+                    break;
+                }
+            }
+
+        }
+        if (listIndex < faceQueue.size()) {
+            return faceQueue.get(listIndex++);
+        }
+
+        return null;
+    }
+
+    @Override
+    public void setPredecessor(Pipe<Face> predecessor) {
+        this.predecessor = predecessor;
     }
 }

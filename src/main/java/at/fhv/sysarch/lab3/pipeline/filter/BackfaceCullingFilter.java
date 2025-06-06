@@ -1,9 +1,10 @@
 package at.fhv.sysarch.lab3.pipeline.filter;
 
 import at.fhv.sysarch.lab3.obj.Face;
+import at.fhv.sysarch.lab3.pipeline.pipe.Pipe;
+import at.fhv.sysarch.lab3.pipeline.pipe.PullPipe;
 import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
 import com.hackoeur.jglm.Vec3;
-import com.hackoeur.jglm.Vec4;
 
 /**
  * BackfaceCullingFilter entfernt alle Dreiecke (Faces), die von der Kamera weggedreht sind.
@@ -13,8 +14,9 @@ import com.hackoeur.jglm.Vec4;
  * Ist faceNormal.z > 0, zeigt die Fläche zur Kamera → weiterreichen.
  * Ist faceNormal.z ≤ 0, zeigt die Fläche weg bzw. ist kantig → verwerfen.
  */
-public class BackfaceCullingFilter implements PushFilter<Face, Face>{
+public class BackfaceCullingFilter implements PushFilter<Face, Face>, PullFilter<Face, Face> {
     private PushPipe<Face> successor;
+    private PullPipe<Face> predecessor;
 
     @Override
     public void setSuccessor(PushPipe<Face> successor) {
@@ -39,5 +41,22 @@ public class BackfaceCullingFilter implements PushFilter<Face, Face>{
         if (faceNormal.getZ() > 0) {
             successor.push(face);
         }
+    }
+
+    @Override
+    public Face pull() {
+        Face data = this.predecessor.pull();
+        if(data != null) {
+            if(data.getV1().dot(data.getN1()) <= 0){
+                return data;
+            }
+            throw new IllegalArgumentException("No culling face found");
+            }
+        return null;
+    }
+
+    @Override
+    public void setPredecessor(Pipe<Face> predecessor) {
+
     }
 }
