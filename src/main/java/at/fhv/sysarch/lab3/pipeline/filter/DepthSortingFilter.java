@@ -96,6 +96,11 @@ public class DepthSortingFilter implements PushFilter<Face, Face>, PullFilter<Fa
         return null;
     }
 
+    public void reset() {
+        this.listIndex = 0;
+        this.faceQueue.clear();
+    }
+
     @Override
     public void setPredecessor(Pipe<Face> predecessor) {
         this.predecessor = predecessor;

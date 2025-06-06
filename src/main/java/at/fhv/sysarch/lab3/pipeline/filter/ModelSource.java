@@ -13,7 +13,8 @@ import at.fhv.sysarch.lab3.pipeline.pipe.PushPipe;
  */
 public class ModelSource implements PushFilter<Void, Face>, PullFilter<Object, Face> {
     private PushPipe<Face> successor;
-    private PullPipe<Face> predecessor;
+    private Model model;
+    private int index = 0;
 
     @Override
     public void setSuccessor(PushPipe<Face> successor) {
@@ -34,10 +35,23 @@ public class ModelSource implements PushFilter<Void, Face>, PullFilter<Object, F
     }
 
 
+
+    public void setModel(Model model) {
+        this.model = model;
+    }
+
     @Override
     public Face pull() {
-        return null;
+        if(this.index < this.model.getFaces().size()) {
+            return this.model.getFaces().get(this.index++);
+        }
+        else{
+            throw new ArrayIndexOutOfBoundsException("Index out of bounds");
+
+        }
     }
+
+    public void reset() {this.index = 0;}
 
     @Override
     public void setPredecessor(Pipe<Object> predecessor) {

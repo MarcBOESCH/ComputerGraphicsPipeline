@@ -14,25 +14,27 @@ import javafx.scene.paint.Color;
 
 public class PullPipelineFactory {
     public static AnimationTimer createPipeline(PipelineData pd) {
-        // TODO: pull from the source (model)
-        PullFilter<Object, Face> sourceModel = new ModelSource();
+        // pull from the source (model)
+        ModelSource sourceModel = new ModelSource();
         Pipe<Face> sourcePipe = new Pipe<>();
-        // TODO 1. perform model-view transformation from model to VIEW SPACE coordinates
+        //1. perform model-view transformation from model to VIEW SPACE coordinates
         PullFilter<Face, Face> rotationFilter = new RotationFilter();
         sourcePipe.setPredecessor(sourceModel);
         rotationFilter.setPredecessor(sourcePipe);
-        // TODO 2. perform backface culling in VIEW SPACE
+        //2. perform backface culling in VIEW SPACE
 
         PullFilter<Face, Face> backfaceCullingFilter = new BackfaceCullingFilter();
         Pipe<Face> backfacePipe = new Pipe<>();
         backfaceCullingFilter.setPredecessor(backfacePipe);
         backfacePipe.setPredecessor(rotationFilter);
-        // TODO 3. perform depth sorting in VIEW SPACE
+
+        //3. perform depth sorting in VIEW SPACE
         PullFilter<Face, Face> depthSortingFilter = new DepthSortingFilter();
         Pipe<Face> depthSortingPipe = new Pipe<>();
         depthSortingFilter.setPredecessor(depthSortingPipe);
         depthSortingPipe.setPredecessor(backfaceCullingFilter);
-        // TODO 4. add coloring (space unimportant)
+
+        // add coloring (space unimportant)
         ColorFilter colorFilter = new ColorFilter(pd.getModelColor());
         Pipe<Face> colorPipe = new Pipe<>();
         colorFilter.setPredecessor(colorPipe);
@@ -40,7 +42,7 @@ public class PullPipelineFactory {
 
         Pipe<Pair<Face, Color>> projectionPipe = new Pipe<>();
         ProjectionFilter projectionFilter = new ProjectionFilter(pd.getProjTransform());
-
+        projectionFilter.setPredecessor(projectionPipe);
         // lighting can be switched on/off
         if (pd.isPerformLighting()) {
             // 4a. TODO perform lighting in VIEW SPACE
@@ -52,12 +54,12 @@ public class PullPipelineFactory {
             
             // 5. TODO perform projection transformation on VIEW SPACE coordinates#
             projectionPipe.setPredecessor(lightFilter);
-            projectionFilter.setPredecessor(projectionPipe);
+            //projectionFilter.setPredecessor(projectionPipe);
 
         } else {
             // 5. TODO perform projection transformation
             projectionPipe.setPredecessor(colorFilter);
-            projectionFilter.setPredecessor(projectionPipe);
+            //projectionFilter.setPredecessor(projectionPipe);
         }
 
         // TODO 6. perform perspective division to screen coordinates
@@ -86,17 +88,21 @@ public class PullPipelineFactory {
              */
             @Override
             protected void render(float fraction, Model model) {
-                // TODO compute rotation in radians
+                //compute rotation in radians
                 rotation += fraction * angularSpeed;
-                // TODO create new model rotation matrix using pd.getModelRotAxis and Matrices.rotate
+                sourceModel.setModel(model);
+                sourceModel.reset();
+                ((DepthSortingFilter)depthSortingFilter).reset();
+                //create new model rotation matrix using pd.getModelRotAxis and Matrices.rotate
                 Mat4 rotationMatrix = Matrices.rotate(rotation, new Vec3(0f, 1f, 0f));
                 Mat4 modelTranslationMatrix = pd.getModelTranslation().multiply(rotationMatrix);
                 // TODO compute updated model-view tranformation
-
-
-                // TODO update model-view filter
                 Mat4 modelView = pd.getViewTransform().multiply(modelTranslationMatrix);
-                // TODO trigger rendering of the pipeline
+
+
+                // update model-view filter
+                ((RotationFilter)rotationFilter).setModelViewMatrix(modelView);
+                // trigger rendering of the pipeline
                 renderer.pull();
             }
         };

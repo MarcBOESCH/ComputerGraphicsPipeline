@@ -47,16 +47,30 @@ public class BackfaceCullingFilter implements PushFilter<Face, Face>, PullFilter
     public Face pull() {
         Face data = this.predecessor.pull();
         if(data != null) {
-            if(data.getV1().dot(data.getN1()) <= 0){
+            // Drei Eckkoordinaten aus Face holen (View-Space)
+            Vec3 p1 = data.getV1().toVec3();
+            Vec3 p2 = data.getV2().toVec3();
+            Vec3 p3 = data.getV3().toVec3();
+
+            // Kanten berechnen
+            Vec3 edge1 = p2.subtract(p1);
+            Vec3 edge2 = p3.subtract(p1);
+
+            // Flächennormale durch Kreuzprodukt berechnen
+            Vec3 faceNormal = edge1.cross(edge2);
+
+            // Z-Komponente testen:
+            if (faceNormal.getZ() > 0) {
                 return data;
             }
-            throw new IllegalArgumentException("No culling face found");
-            }
+            // If the face is not visible, pull the next one
+            return pull();
+        }
         return null;
     }
 
     @Override
     public void setPredecessor(Pipe<Face> predecessor) {
-
+        this.predecessor = predecessor;
     }
 }

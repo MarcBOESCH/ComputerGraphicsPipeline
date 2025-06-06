@@ -42,6 +42,9 @@ public class ProjectionFilter implements PushFilter<Pair<Face, Color>, Pair<Face
     @Override
     public Pair<Face, Color> pull() {
         Pair<Face, Color> data = predecessor.pull();
+        if(data == null){
+            return null;
+        }
         Face face = data.fst();
 
         Face projectedFace = new Face(
